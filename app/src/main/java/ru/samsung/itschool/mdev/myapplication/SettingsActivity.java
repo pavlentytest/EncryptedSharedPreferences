@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Map;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -28,7 +30,14 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        EncryptedPreferenceDataStore prefs = EncryptedPreferenceDataStore.getInstance(this);
+        EncryptedPreferenceDataStore prefs = null;
+        try {
+            prefs = EncryptedPreferenceDataStore.getInstance(this);
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Log.d("RRR", prefs.getString("signature", ""));
         Log.d("RRR", prefs.getString("reply", ""));
         Log.d("RRR", Boolean.toString(prefs.getBoolean("sync", true)));
@@ -40,7 +49,13 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             PreferenceManager preferenceManager = getPreferenceManager();
-            preferenceManager.setPreferenceDataStore(EncryptedPreferenceDataStore.getInstance(getContext()));
+            try {
+                preferenceManager.setPreferenceDataStore(EncryptedPreferenceDataStore.getInstance(getContext()));
+            } catch (GeneralSecurityException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
         }

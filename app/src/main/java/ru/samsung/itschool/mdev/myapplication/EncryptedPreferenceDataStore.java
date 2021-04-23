@@ -2,11 +2,16 @@ package ru.samsung.itschool.mdev.myapplication;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
 
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceDataStore;
 import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Set;
 
 public class EncryptedPreferenceDataStore extends PreferenceDataStore {
@@ -17,23 +22,28 @@ public class EncryptedPreferenceDataStore extends PreferenceDataStore {
     private SharedPreferences mSharedPreferences;
     private Context mContext;
 
-    private EncryptedPreferenceDataStore(Context context) {
+    private EncryptedPreferenceDataStore(Context context) throws GeneralSecurityException, IOException {
+        MasterKey masterKey = new MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build();
+
         try {
             mContext = context;
+
             mSharedPreferences = EncryptedSharedPreferences.create(
-                    CONFIG_FILE_NAME,
-                    CONFIG_MASTER_KEY_ALIAS,
                     context,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, //for encrypting Keys
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM ////for encrypting Values
-            );
+                    CONFIG_FILE_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+
         } catch (Exception e) {
             // Fallback
             mSharedPreferences = context.getSharedPreferences(CONFIG_FILE_NAME, Context.MODE_PRIVATE);
         }
     }
 
-    public static EncryptedPreferenceDataStore getInstance(Context ctx) {
+    public static EncryptedPreferenceDataStore getInstance(Context ctx) throws GeneralSecurityException, IOException {
         if (mInstance == null) {
             mInstance = new EncryptedPreferenceDataStore(ctx);
         }
