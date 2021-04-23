@@ -23,7 +23,7 @@ public class EncryptedPreferenceDataStore extends PreferenceDataStore {
     private Context mContext;
 
     private EncryptedPreferenceDataStore(Context context) throws GeneralSecurityException, IOException {
-        MasterKey masterKey = new MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+        MasterKey masterKey = new MasterKey.Builder(context, CONFIG_MASTER_KEY_ALIAS)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build();
 
